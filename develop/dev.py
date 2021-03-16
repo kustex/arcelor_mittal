@@ -9,6 +9,8 @@ from scipy.interpolate import interp1d
 path_b4 = '520677B4'
 path_b5 = '520677B5'
 
+
+
 def get_df_length_and_values(path):
     '''
     Reading, cleaning of CSV-file
@@ -50,7 +52,6 @@ def interpolate_values(x, y):
 	ynew = f(xnew)
 	return xnew, ynew
 
-x_b4 = get_
 
 
 def get_mean_until_140(df_b4, df_b5):  
@@ -85,11 +86,11 @@ def get_values_between_140_and_170(df_b4, df_b5):
 
 
 
-fig, ax = plt.subplots(figsize=(20,10))
-l1, = ax.plot(df_b4['length_p'][10:], df_b4['values'][10:])
-l2, = ax.plot(df_b5['length_p'][10:], df_b5['values'][10:])
-ax.legend([l1, l2], ['B4','B5'])
-plt.title('B4 and B5 measurements')
-plt.xlabel('Length metal plate')
-plt.ylabel('Width metal plate')
-plt.show()
+# fig, ax = plt.subplots(figsize=(20,10))
+# l1, = ax.plot(df_b4['length_p'][10:], df_b4['values'][10:])
+# l2, = ax.plot(df_b5['length_p'][10:], df_b5['values'][10:])
+# ax.legend([l1, l2], ['B4','B5'])
+# plt.title('B4 and B5 measurements')
+# plt.xlabel('Length metal plate')
+# plt.ylabel('Width metal plate')
+# plt.show()
