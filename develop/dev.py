@@ -3,10 +3,12 @@ import re
 import os
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+import seaborn as sns
+import matplotlib. pyplot as plt
 
 from scipy.interpolate import interp1d
-
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
 
 def get_df_length_and_values(path):
 	'''
@@ -71,3 +73,29 @@ def get_dict_abs_differences():
 					max_abs_diff = max(difference_b4_b5)
 					newdict[f'{name_b4[:-6]}'] = max_abs_diff
 	return newdict
+
+dict = get_dict_abs_differences()
+
+def get_five_perc_highest_abs_diff(dictionary):
+	'''
+	This function filters out the 5% of coils with the highest absolute difference.
+	It returns a list of coils that have the highest chance of contraction in the dataset, by using the filtering method described above.
+	'''
+	def percentageOfList(l, p):
+		return l[0:int(len(l) * p)]
+	data = pd.DataFrame.from_dict(dictionary, orient='index', columns=['max_abs_diff'])
+	data = percentageOfList(data.iloc[:,0].sort_values(ascending=False), 0.05)
+	idx = data.index
+	return idx.tolist()
+
+print(get_five_perc_highest_abs_diff(dict))
+
+# x = np.array(data.iloc[:,0]).reshape(-1, 1)
+# model = KMeans(n_clusters=2, random_state=0)
+# train = model.fit(x)
+# labels = model.labels_
+# data['labels'] = labels
+# print(data[data['labels'] == 1])
+
+
+
