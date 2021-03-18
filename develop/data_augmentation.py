@@ -21,6 +21,25 @@ def read_all_csv():
                 augm_df.at[coil, 'B5min'] = min
     return augm_df
 
-df=pd.read_csv('minmax.csv',index_col=0)
-coildata=pd.read_csv('../data/CoilData.csv',index_col='coil')
-coildata.join(df).to_csv('../data/CoilDataAugmented.csv')
+def maingroup(x):
+    return re.search(r'^\w\w\w', x).group()
+
+def subgroup(x):
+    return re.search(r'\w\s$', x).group()
+
+def turn_groups_into_dummies(df):
+    main_df=pd.get_dummies(df['maingroup'],prefix='maingroup',sparse=True)
+    sub_df = pd.get_dummies(df['subgroup'],prefix='subgroup',sparse=True)
+    df=df.join([main_df,sub_df])
+    return df
+
+def convert_analyse_into_categorical(df):
+    df['maingroup'] = df['analyse'].apply(maingroup)
+    df['subgroup'] = df['analyse'].apply(subgroup)
+    df = turn_groups_into_dummies(df)
+    df.drop(['analyse','maingroup', 'subgroup'], inplace=True, axis=1)
+    return df
+
+def augment_data(df):
+    df = convert_analyse_into_categorical(df)
+    return df
