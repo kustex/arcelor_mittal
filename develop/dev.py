@@ -1,95 +1,101 @@
 import zipfile
 import re
+import os
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+import seaborn as sns
+import matplotlib. pyplot as plt
 
 from scipy.interpolate import interp1d
-
-path_b4 = '520677B4'
-path_b5 = '520677B5'
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
 
 def get_df_length_and_values(path):
-    '''
-    Reading, cleaning of CSV-file
-    return = 2 pandas Series 1. Length, 2. Values
+	'''
+	- Reading, cleaning of CSV-file
+	- Return = 2 pandas Series 1. Length, 2. Values
+	'''
+	df = pd.read_csv(f'../test_data/{path}.csv', header=None, index_col=0, squeeze=True)
+	df = str(pd.Series(data=df.index).tolist())
+	df = re.split(';', df)[3:]
+	length_p = []
+	for i in df:
+		if i != 'Values':
+			length_p.append(i)
+		else:
+			break
+	length_p = length_p[:-1]
+	length_p = [float(i) for i in length_p]
+	values = df[len(length_p)+3:][:-1]
+	values = [float(i) for i in values]
+	values = [i for i in values if i != 0]
+	length_p = [i for i in length_p if i != 0]
 
-    '''
-    df = pd.read_csv(f'../data/SignalExport/{path}.csv', header = None, index_col = 0, squeeze = True)
-    df = str(pd.Series(data=df.index).tolist())
-    df = re.split(';', df)[3:]
+	df = list(zip(length_p, values))
+	df = pd.DataFrame(data=df, columns=['length_p','values'])
 
-    length_p = []
-    for i in df:
-        if i != 'Values':
-            length_p.append(i)
-        else:
-            break
-
-    length_p = length_p[:-1]
-    length_p = [float(i) for i in length_p]
-    values = df[len(length_p)+3:][:-1]
-    values = [float(i) for i in values]
-    values = [i for i in values if i != 0]
-    length_p = [i for i in length_p if i != 0]
-
-    df = list(zip(length_p, values))
-    df = pd.DataFrame(data=df, columns=['length_p','values'])
-    length_p = df['length_p']
-    values = df['values']
-    return length_p, values, df
-
-df_b4 = get_df_length_and_values(path_b4)[2]
-df_b5 = get_df_length_and_values(path_b5)[2]
+	length_p = df['length_p']
+	values = df['values']
+	return length_p, values, df
 
 def interpolate_values(x, y):
-	x = x
-	y = y 
-	f = interp1d(x, y)
-	xnew = np.linspace(0,200, 0.001)
+	'''
+	Interpolation of the data so that we take the differences of b4 and b5.
+	'''
+	f = interp1d(x, y, fill_value="extrapolate")
+	xnew = np.arange(0, 200, 0.1)
 	ynew = f(xnew)
 	return xnew, ynew
 
-x_b4 = get_
+def get_dict_abs_differences():
+	'''
+	This function returns the max absolute difference between b4 and b5 in a dictionary, at the interval of 140m until 170m,
+	for all the coils in the data folder.
+	'''
+	column_list = os.listdir('../test_data')
+	newlist = [name for name in column_list if name.endswith("B4.csv")]
+	newdict = {}
+	for name_b4 in newlist:
+		for name_b5 in column_list:
+			if name_b5[:-5] == name_b4[:-5] and name_b5 != name_b4:
+				b4_x = get_df_length_and_values(name_b4[:-4])[0]
+				b4_y = get_df_length_and_values(name_b4[:-4])[1]
+				b5_x = get_df_length_and_values(name_b5[:-4])[0]
+				b5_y = get_df_length_and_values(name_b5[:-4])[1]
+				if len(b4_x) > 0 and len(b5_x) > 0:
+					b4_x_values = [i for i in b4_x if i > 0]
+					b4_y_values = [i for i in b4_y if i > 0]
+					b5_x_values = [i for i in b5_x if i > 0]
+					b5_y_values = [i for i in b5_y if i > 0]
+					b4_l = interpolate_values(b4_x_values, b4_y_values)[1]
+					b5_l = interpolate_values(b5_x_values, b5_y_values)[1]
+					difference_b4_b5 = [abs(i-j) for i, j in zip(b4_l[140:170], b5_l[140:170])]
+					max_abs_diff = max(difference_b4_b5)
+					newdict[f'{name_b4[:-6]}'] = max_abs_diff
+	return newdict
+
+dict = get_dict_abs_differences()
+
+def get_five_perc_highest_abs_diff(dictionary):
+	'''
+	This function filters out the 5% of coils with the highest absolute difference.
+	It returns a list of coils that have the highest chance of contraction in the dataset, by using the filtering method described above.
+	'''
+	def percentageOfList(l, p):
+		return l[0:int(len(l) * p)]
+	data = pd.DataFrame.from_dict(dictionary, orient='index', columns=['max_abs_diff'])
+	data = percentageOfList(data.iloc[:,0].sort_values(ascending=False), 0.05)
+	idx = data.index
+	return idx.tolist()
+
+print(get_five_perc_highest_abs_diff(dict))
+
+# x = np.array(data.iloc[:,0]).reshape(-1, 1)
+# model = KMeans(n_clusters=2, random_state=0)
+# train = model.fit(x)
+# labels = model.labels_
+# data['labels'] = labels
+# print(data[data['labels'] == 1])
 
 
-def get_mean_until_140(df_b4, df_b5):  
-    lst_b4 = []
-    lst_b5 = []
-    for i, j in zip(df_b4['length_p'], df_b4['values']):
-        if i < 140:
-            lst_b4.append(j)
-        else:
-            break
-    for i, j in zip(df_b5['length_p'], df_b5['values']):
-        if i < 140:
-            lst_b5.append(j)
-        else:
-            break
-    b4_mean = np.mean(lst_b4)
-    b5_mean = np.mean(lst_b5)
-    return b4_mean, b5_mean
 
-def get_values_between_140_and_170(df_b4, df_b5):
-    lst_b4 = []
-    lst_b5 = []
-    for i, j in zip(df_b4['length_p'], df_b4['values']):
-        if i >= 140 and i <= 170:
-            lst_b4.append(j)
-    for i, j in zip(df_b5['length_p'], df_b5['values']):
-        if i >= 140 and i <= 170:
-            lst_b5.append(j)
-    return len(lst_b4), len(lst_b5)
-
-
-
-
-
-fig, ax = plt.subplots(figsize=(20,10))
-l1, = ax.plot(df_b4['length_p'][10:], df_b4['values'][10:])
-l2, = ax.plot(df_b5['length_p'][10:], df_b5['values'][10:])
-ax.legend([l1, l2], ['B4','B5'])
-plt.title('B4 and B5 measurements')
-plt.xlabel('Length metal plate')
-plt.ylabel('Width metal plate')
-plt.show()
