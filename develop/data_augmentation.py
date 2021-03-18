@@ -41,5 +41,9 @@ def convert_analyse_into_categorical(df):
     return df
 
 def augment_data(df):
+    '''
+    Converts analyse into maingroup and subgroup columns and than dummies them
+    After dummy-encoding gets rid of the obsolete columns 'analyse' , 'maingroup' ,'subgroup'
+    '''
     df = convert_analyse_into_categorical(df)
     return df
