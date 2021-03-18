@@ -1,5 +1,6 @@
 import zipfile
 import re
+import csv
 import os
 import pandas as pd
 import numpy as np
@@ -16,7 +17,7 @@ def get_df_length_and_values(path):
 	- Reading, cleaning of CSV-file
 	- Return = 2 pandas Series 1. Length, 2. Values
 	'''
-	df = pd.read_csv(f'../test_data/{path}.csv', header=None, index_col=0, squeeze=True)
+	df = pd.read_csv(f'../data/SignalExport/{path}.csv', header=None, index_col=0, squeeze=True)
 	df = str(pd.Series(data=df.index).tolist())
 	df = re.split(';', df)[3:]
 	length_p = []
@@ -53,7 +54,7 @@ def get_dict_abs_differences():
 	This function returns the max absolute difference between b4 and b5 in a dictionary, at the interval of 140m until 170m,
 	for all the coils in the data folder.
 	'''
-	column_list = os.listdir('../test_data')
+	column_list = os.listdir('../data/SignalExport/')
 	newlist = [name for name in column_list if name.endswith("B4.csv")]
 	newdict = {}
 	for name_b4 in newlist:
@@ -87,3 +88,7 @@ def get_five_perc_highest_abs_diff(dictionary):
 	idx = data.index
 	return idx.tolist()
 
+with open('output.csv', 'w', newline='') as f:
+	writer = csv.writer(f)
+	writer.writerow(get_five_perc_highest_abs_diff(get_dict_abs_differences()))
+	
