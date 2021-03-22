@@ -4,8 +4,8 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib. pyplot as plt
-
-from csv_reader import csv_to_df
+from scipy.interpolate import interp1d
+from develop.csv_reader import csv_to_df
 
 def interpolate_values(x, y):
 	'''
