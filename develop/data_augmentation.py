@@ -1,14 +1,16 @@
 import os
 import pandas as pd
 import re
-from develop.dev import get_df_length_and_values
+
+from develop.csv_reader import csv_to_df
+
 
 def read_all_csv():
     augm_df = pd.DataFrame()
     for filename in os.listdir('../data/SignalExport'):
         if filename.endswith(".csv"):
             filename = filename.replace('.csv', '')
-            length, width, df = get_df_length_and_values(filename)
+            length, width, df = csv_to_df(filename)
             max = width.max()
             min = width.min()
             coil = re.search(r'\d+', filename).group()
