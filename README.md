@@ -1,4 +1,4 @@
-# Arcelor mittal usecase
+# Arcelor Mittal usecase - Becode.org
 
 ### Project:  
 	- Predict which coils will have a constriction based on its metrics measured before being processed. 
