@@ -1,9 +1,9 @@
 # arcelor_mittal
 
-Project:
+### Project:  
 	- Predict which coils will have a constriction based on its metrics measured before being processed. 
 
-Steps:  
+### Steps:  
 	1. Filter which coils have constriction based on absolute difference between the interval of 140 - 170 meters on the coils b4 and b5.  
 	2. Label every coil if it has a constriction or not.  
 	3. Setup pipeline for ML classifier model.  
